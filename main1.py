@@ -19,7 +19,7 @@ PARTICLE_MAX_SCALE = 0.08
 PARTICLE_MIN_X = -20
 PARTICLE_MAX_X = 20
 PARTICLE_VELOCITY_X = 0
-PARTICLE_VELOCITY_Y = 4
+PARTICLE_VELOCITY_Y = -4
 PARTICLE_MIN_AX = -0.1
 PARTICLE_MAX_AX = 0.1
 PARTICLE_MIN_AY = -0.1
@@ -41,16 +41,13 @@ class Particle(arcade.Sprite):
         self.color_pos = 0
 
         self.particle_colors = [
-            (open_color.red_5, 4)
-            ,(open_color.red_4, 5)
-            ,(open_color.red_3, 6)
-            ,(open_color.red_2, 7)
-            ,(open_color.red_1, 8)
-            ,(open_color.teal_1, 8)
-            ,(open_color.teal_2, 7)
-            ,(open_color.teal_3, 6)
-            ,(open_color.teal_4, 5)
-            ,(open_color.teal_5, 4)
+            (open_color.blue_9, 4)
+            ,(open_color.blue_8, 5)
+            ,(open_color.blue_7, 6)
+            ,(open_color.blue_6, 7)
+            ,(open_color.blue_5, 8)
+            ,(open_color.blue_4, 8)
+            ,(open_color.blue_3, 7)
         ]
         (self.color, self.lifetime) = self.particle_colors[self.color_pos]
         self.alive = True
@@ -59,7 +56,8 @@ class Particle(arcade.Sprite):
     def update(self):
         self.dx += self.ax
         self.dy += self.ay
-        self.center_x += self.dx
+        #Makes the particles look like they are falling from a cloud
+        self.center_x += 0
         self.center_y += self.dy
         self.scale -= self.decay
         if self.scale < self.decay:
@@ -72,6 +70,16 @@ class Particle(arcade.Sprite):
             else:
                 (self.color, self.lifetime) = self.particle_colors[self.color_pos]
 
+#Created a cloud class so the rain can fall from a cloud
+class Cloud(arcade.Sprite):
+    def __init__(self, x, y):
+        super().__init__("assets/smoke_08.png", 0.2)
+        self.center_x = x
+        self.center_y = y
+
+    def update(self, x, y):
+        self.center_x = x
+        self.center_y = y
 
 
 
@@ -90,6 +98,7 @@ class Window(arcade.Window):
         arcade.set_background_color(open_color.black)
 
         self.particle_list = arcade.SpriteList()
+        self.cloud = Cloud(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         self.mouse_down = False
         self.x = SCREEN_WIDTH // 2
         self.y = SCREEN_HEIGHT // 2
@@ -106,7 +115,8 @@ class Window(arcade.Window):
             dx = PARTICLE_VELOCITY_X
             dy = PARTICLE_VELOCITY_Y
             ax = random.uniform(PARTICLE_MIN_AX,PARTICLE_MAX_AX)
-            ay = random.uniform(PARTICLE_MIN_AY,PARTICLE_MAX_AY)
+            #This makes them not fly up
+            ay = 0
             decay = random.uniform(PARTICLE_MIN_DECAY,PARTICLE_MAX_DECAY)
             scale = random.uniform(PARTICLE_MIN_SCALE,PARTICLE_MAX_SCALE)
             #Particle(asset, sprite scale, initial position [x], initial position [y], velocity [x], velocity [y], acceleration [x], acceleration [y], scale decay)
@@ -122,10 +132,11 @@ class Window(arcade.Window):
             if not p.alive:
                 p.kill
 
-
+    #Added my cloud drawing
     def on_draw(self):
         arcade.start_render()
         self.particle_list.draw()
+        self.cloud.draw()
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.x = x
@@ -137,9 +148,11 @@ class Window(arcade.Window):
         self.y = y
         self.mouse_down = False
 
+    #Makes the cloud follow the mouse
     def on_mouse_motion(self, x, y, dx, dy):
         self.x = x
         self.y = y
+        self.cloud.update(x, y)
 
 
 def main():
